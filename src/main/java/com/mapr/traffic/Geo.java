@@ -1,5 +1,10 @@
 package com.mapr.traffic;
 
+import com.google.common.geometry.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Simple quad-tree substitute for S2.
  *
@@ -7,57 +12,27 @@ package com.mapr.traffic;
  * coordinates.
  */
 class Geo {
-    static long point(double latitude, double longitude) {
-        // scale coordinates into [-1,1] x [-1,1] square
-        long y = limit(latitude, 90);
-        long x = limit(longitude, 180);
-        long r = 0;
-        for (int i = 0; i < 32; i++) {
-            r = (r << 2) + ((x >>> 31) << 1) + ((y >>> 31));
-            x = (x << 1) & 0xffff_ffffL;
-            y = (y << 1) & 0xffff_ffffL;
-        }
-        return r;
+    static S2CellId point(double latitude, double longitude) {
+        return S2CellId.fromLatLng(S2LatLng.fromDegrees(latitude, longitude));
     }
 
-    static double latitude(long point) {
-        return extract(point, 90);
+    static double latitude(S2CellId point) {
+        return point.toLatLng().lat().degrees();
     }
 
-    static double longitude(long point) {
-        return extract(point >> 1, 180);
+    static double longitude(S2CellId point) {
+        return point.toLatLng().lng().degrees();
+
     }
 
-    static long boundingBoxMin(long point, double dx, double dy) {
-        double y = latitude(point);
-        double x = longitude(point);
-        return point(y - dy, x - dx);
-    }
+    static List<S2CellId> regionSearch(S2LatLng point, double dx, double dy) {
+        new S2RegionCoverer()
+                .getCovering(S2Cap.fromAxisAngle(point.toPoint(), S1Angle.radians(dx / S2LatLng.EARTH_RADIUS_METERS)));
+        S2LatLngRect r = S2LatLngRect.fromCenterSize(point,
+                S2LatLng.fromRadians(dx / S2LatLng.EARTH_RADIUS_METERS, dy / S2LatLng.EARTH_RADIUS_METERS));
 
-    static long boundingBoxMax(long point, double dx, double dy) {
-        double y = latitude(point);
-        double x = longitude(point);
-        return point(y + dy, x + dx);
-    }
-
-    static double extract(long point, double limit) {
-        point = point & 0x5555_5555_5555_5555L;
-        long r = 0;
-        for (int i = 0; i < 32; i++) {
-            r = r + ((point >> i) & (1L << i));
-        }
-        double x = 2.0 * r * limit / 0xffff_ffffL;
-        if (x > limit) {
-            return x - 2 * limit;
-        } else {
-            return x;
-        }
-    }
-
-    static long limit(double x, double limit) {
-        if (Math.abs(x) > limit) {
-            throw new IllegalArgumentException("Bad coordinate");
-        }
-        return 0xffff_ffffL & (long) (0x7fff_ffffL * (x / limit));
+        ArrayList<S2CellId> covering = new ArrayList<>();
+        new S2RegionCoverer().getCovering(r, covering);
+        return covering;
     }
 }

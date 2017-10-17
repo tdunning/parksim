@@ -1,5 +1,6 @@
 package com.mapr.traffic;
 
+import com.google.common.geometry.S2CellId;
 import org.junit.Test;
 
 import java.util.*;
@@ -66,7 +67,7 @@ public class GeoTest {
         for (int i = 0; i < 1000; i++) {
             double y = rand.nextDouble() * 180 - 90;
             double x = rand.nextDouble() * 360 - 180;
-            long point = Geo.point(y, x);
+            S2CellId point = Geo.point(y, x);
             assertEquals(y, Geo.latitude(point), 1e-5);
             assertEquals(x, Geo.longitude(point), 1e-5);
         }
@@ -75,7 +76,7 @@ public class GeoTest {
     private static class Point {
         double x;
         double y;
-        long code;
+        S2CellId code;
 
         Point(double x, double y) {
             this.x = x;
@@ -88,8 +89,8 @@ public class GeoTest {
     public void scan() {
         Random rand = new Random(1);
 
-        List<Point> data = new ArrayList<>();
-        SortedMap<Long, Point> table = new TreeMap<>();
+        List<ParkingSpot> data = new ArrayList<>();
+        SortedMap<Long, ParkingSpot> table = new TreeMap<>();
 
         for (int i = 0; i < 10000; i++) {
             double y = rand.nextDouble() * 180 - 90;
@@ -101,18 +102,8 @@ public class GeoTest {
         }
 
         for (int i = 0; i < 200; i++) {
-            Point p1 = data.get(rand.nextInt(data.size()));
-            long point = p1.code;
-            double delta = 1e-4;
-            long a = Geo.boundingBoxMin(point, delta, delta);
-            long b = Geo.boundingBoxMax(point, delta, delta);
-            int k = 0;
-            for (Long p2 : table.tailMap(a).keySet()) {
-                if (p2 > b) {
-                    break;
-                }
-                k++;
-                Point point2 = table.get(p2);
+            ParkingSpot p1 = data.get(rand.nextInt(data.size()));
+
                 assertEquals(p1.x, point2.x, 2 * delta);
                 assertEquals(p1.y, point2.y, 2 * delta);
             }
@@ -125,10 +116,9 @@ public class GeoTest {
         }
     }
 
-    private void addPoint(List<Point> data, SortedMap<Long, Point> table, double y, double x) {
-        long point = Geo.point(y, x);
-        Point p = new Point(x, y);
+    private void addPoint(List<ParkingSpot> data, SortedMap<Long, ParkingSpot> table, double y, double x) {
+        ParkingSpot p = new ParkingSpot(x, y);
         data.add(p);
-        table.put(point, p);
+        table.put(S2CellId.fromLatLng(p.getLocation()).id(), p);
     }
 }
