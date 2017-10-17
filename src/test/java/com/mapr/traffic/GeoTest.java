@@ -36,10 +36,11 @@ public class GeoTest {
             addPoint(data, table, y + rand.nextDouble() * 10, x + rand.nextDouble() * 10);
         }
 
+        World w = new World();
         double delta = 1;
         for (int i = 0; i < 200; i++) {
             ParkingSpot p1 = data.get(rand.nextInt(data.size()));
-            ParkingSpot point2 = World.getParkingSpot(table, p1.getX(), p1.getY(), 100);
+            ParkingSpot point2 = w.getParkingSpot(table, p1.getX(), p1.getY(), 100);
             assertEquals(p1.getX(), point2.getX(), 2 * delta);
             assertEquals(p1.getY(), point2.getY(), 2 * delta);
         }

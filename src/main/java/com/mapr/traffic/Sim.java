@@ -1,9 +1,6 @@
 package com.mapr.traffic;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -43,10 +40,26 @@ public class Sim<T extends Sim> {
         return rand.nextDouble() * max;
     }
 
-    public class Event implements Comparable<Event> {
-        double t;
+    @SuppressWarnings("WeakerAccess")
+    public Collection<Event<T>> getFuture() {
+        return todo;
+    }
 
-        Function<T, Void> action;
+    @SuppressWarnings("WeakerAccess")
+    public boolean step() {
+        Event next = todo.poll();
+        if (next != null) {
+            t = next.when;
+            //noinspection unchecked
+            next.action.apply(this);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static class Event<T> implements Comparable<Event<T>> {
+        private Function<T, Void> action;
         private final double when;
 
         @SuppressWarnings("WeakerAccess")
@@ -56,23 +69,21 @@ public class Sim<T extends Sim> {
         }
 
         @Override
-        public int compareTo(Event o) {
-            return Double.compare(o.t, t);
+        public int compareTo(Event<T> o) {
+            return Double.compare(o.when, when);
         }
     }
 
-    private PriorityQueue<Event> todo;
+    private PriorityQueue<Event<T>> todo = new PriorityQueue<>();
 
-    public void run() {
-        Event next = todo.poll();
-        while (next != null) {
-            t = next.t;
-            //noinspection unchecked
-            next.action.apply((T) this);
+    public void run(double limit) {
+        //noinspection StatementWithEmptyBody
+        while (t < limit && step()) {
+            // ignore
         }
     }
 
     void schedule(Function<T, Void> action, double when) {
-        todo.add(new Event(action, when));
+        todo.add(new Event<>(action, when));
     }
 }
