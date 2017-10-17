@@ -20,7 +20,7 @@ public class World extends Sim<World> {
 
     // MapR headquarters in 2017
     private static final double BASE_LATITUDE = 37.4185099;
-    public static final double BASE_LONGITUDE = -121.9450038;
+    private static final double BASE_LONGITUDE = -121.9450038;
 
     private SortedMap<Long, ParkingSpot> spots = new TreeMap<>();
 
@@ -40,7 +40,7 @@ public class World extends Sim<World> {
         return getParkingSpot(spots, x, y, limit);
     }
 
-    private static ParkingSpot getParkingSpot(SortedMap<Long, ParkingSpot> spots, double x, double y, double limit) {
+     static ParkingSpot getParkingSpot(SortedMap<Long, ParkingSpot> spots, double x, double y, double limit) {
         S2LatLng base = getS2LatLng(x, y);
         List<S2CellId> searches = Geo.regionSearch(base, limit / 2, limit / 2);
 
