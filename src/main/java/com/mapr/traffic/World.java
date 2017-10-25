@@ -56,8 +56,7 @@ class World extends Sim<World> {
         AtomicReference<ParkingSpot> best = new AtomicReference<>();
         AtomicReference<Double> closest = new AtomicReference<>(Double.MAX_VALUE);
         Geo.scan(spots, x, y, limit,
-                ParkingSpot::getLocation,
-                p -> {
+                (p, i) -> {
                     double ds = p.getLocation().getEarthDistance(base);
                     if (!p.isInUse(this) && (best.get() == null || ds < closest.get())) {
                         best.set(p);
@@ -66,5 +65,10 @@ class World extends Sim<World> {
                     return true;
                 });
         return best.get();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public SortedMap<Long, ParkingSpot> getSpotTable() {
+        return spots;
     }
 }

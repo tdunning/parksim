@@ -3,9 +3,13 @@ package com.mapr.traffic;
 import com.google.common.geometry.S2CellId;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class GeoTest {
     @Test
