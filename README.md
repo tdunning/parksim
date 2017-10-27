@@ -1,4 +1,3 @@
-=======
 ### Geo-search Example
 
 This repo contains an example of how to implement geographical 
@@ -39,4 +38,9 @@ The ID's for regions of various sizes are cleverly selected so that if
 you take the ID's for consecutive regions of a particular level, you can
 know that all of the ID's for all overlapping regions at a lower level
 will be between these two limiting ID's.
-  
+
+Here is a picture of how a search works. We want to search for red dots 
+that are inside the circle. S2 provides us with a list of the squishy
+rectangles, each of which represents a sequential scan of S2 id's.
+![searching for points in a circle](/s2-search.png)
+  
